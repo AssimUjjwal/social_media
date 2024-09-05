@@ -1,20 +1,14 @@
 import express from "express";
 import config from "config";
-
 import connect from "./utils/dbConnect";
 import logger from "./utils/logger";
-import routes from "./routes";
-import deserializeUser from "./middleware/deserializeUser";
+import createServer from "./utils/server";
 
 const port = config.get<number>("port");
 
+const app = createServer();
 
-const app = express();
-app.use(express.json());
-
-app.listen(port, async ()=>{
-    logger.info(`App listening on port ${port}.`);
-    await connect();
-    app.use(deserializeUser);
-    routes(app);
-})
+app.listen(port, async () => {
+  logger.info(`App is running at http://localhost:${port}`);
+  await connect();
+});
