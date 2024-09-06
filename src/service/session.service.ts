@@ -1,42 +1,39 @@
+// session.service.ts
 import { get } from "lodash";
-import config from "config";
-import mongoose, { FilterQuery, RootFilterQuery, UpdateQuery } from "mongoose";
-import SessionModel, { SessionDocument } from "../models/session.model";
+import { createSession, findSessions, updateSession, findSessionById } from "../repository/session.repository";
 import { verifyJwt, signJwt } from "../utils/jwt.utils";
-import { findUser } from "./user.service";
+import { findUserService } from "./user.service";
+import config from "config";
 
-export async function createSession(userId: mongoose.Types.ObjectId, userAgent: string) {
-    const session = await SessionModel.create({ user: userId, userAgent });
-    return session.toJSON();
+export async function createSessionService(userId: any, userAgent: string) {
+  const session = await createSession(userId, userAgent);
+  return session.toJSON();
 }
 
-export async function findSessions(query: RootFilterQuery<SessionDocument>) {
-    return SessionModel.find(query).lean();
+export async function findSessionsService(query: any) {
+  return findSessions(query);
 }
 
-export async function updateSession(
-    query: RootFilterQuery<SessionDocument>,
-    update: UpdateQuery<SessionDocument>
+export async function updateSessionService(query: any, update: any) {
+  return updateSession(query, update);
+}
+
+export async function reIssueAccessTokenService(
+  { refreshToken }: { refreshToken: string }
 ) {
-    return SessionModel.updateOne(query, update);
-}
+  const { decoded } = verifyJwt(refreshToken);
+  if (!decoded || !get(decoded, "session")) return null;
 
-export async function reIssueAccessToken(
-    { refreshToken }: { refreshToken: string }
-) {
-    const { decoded } = verifyJwt(refreshToken);
-    if (!decoded || !get(decoded, "session")) return null;
+  const session = await findSessionById(get(decoded, "session"));
+  if (!session || !session.valid) return null;
 
-    const session = await SessionModel.findById(get(decoded, "session"));
-    if (!session || !session.valid) return null;
+  const user = await findUserService({ _id: session.user });
+  if (!user) return null;
 
-    const user = await findUser({ _id: session.user });
-    if (!user) return null;
+  const accessToken = signJwt(
+    { ...user, session: session._id },
+    { expiresIn: config.get("accessTokenTtl") }
+  );
 
-    const accessToken = signJwt(
-        { ...user, session: session._id },
-        { expiresIn: config.get("accessTokenTtl") } // 15 minutes
-    );
-
-    return accessToken;
+  return accessToken;
 }

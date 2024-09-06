@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { omit } from "lodash";
 import { CreateUserInput } from "../schema/user.schema";
-import { createUser } from "../service/user.service";
+import { createUserService } from "../service/user.service";
 import logger from "../utils/logger";
 
 export async function createUserHandler(
@@ -9,7 +9,7 @@ export async function createUserHandler(
   res: Response
 ) {
   try {
-    const user = await createUser(omit(req.body, "passwordConfirmation"));
+    const user = await createUserService(omit(req.body, "passwordConfirmation"));
     
     return res.send(user);
   } catch (e: any) {

@@ -4,10 +4,10 @@ import {
   UpdateProductInput,
 } from "../schema/product.schema";
 import {
-  createProduct,
-  deleteProduct,
-  findAndUpdateProduct,
-  findProduct,
+  createProductService,
+  deleteProductService,
+  findAndUpdateProductService,
+  findProductService,
 } from "../service/product.service";
 import { Types } from "mongoose";
 
@@ -17,7 +17,7 @@ export async function createProductHandler(
 ) {
   const userId = res.locals.user._id as Types.ObjectId;
   const body = req.body;
-  const product = await createProduct({ ...body, user: userId });
+  const product = await createProductService({ ...body, user: userId });
 
   return res.send(product);
 }
@@ -30,7 +30,7 @@ export async function updateProductHandler(
   const productId = req.params.productId;
   const update = req.body;
 
-  const product = await findProduct({ productId });
+  const product = await findProductService({ productId });
 
   if (!product) {
     return res.sendStatus(404);
@@ -40,7 +40,7 @@ export async function updateProductHandler(
     return res.sendStatus(403);
   }
 
-  const updatedProduct = await findAndUpdateProduct({ productId }, update, {
+  const updatedProduct = await findAndUpdateProductService({ productId }, update, {
     new: true,
   });
 
@@ -52,7 +52,7 @@ export async function getProductHandler(
   res: Response
 ) {
   const productId = req.params.productId;
-  const product = await findProduct({ productId });
+  const product = await findProductService({ productId });
 
   if (!product) {
     return res.sendStatus(404);
@@ -68,7 +68,7 @@ export async function deleteProductHandler(
   const userId = res.locals.user._id;
   const productId = req.params.productId;
 
-  const product = await findProduct({ productId });
+  const product = await findProductService({ productId });
 
   if (!product) {
     return res.sendStatus(404);
@@ -78,7 +78,7 @@ export async function deleteProductHandler(
     return res.sendStatus(403);
   }
 
-  await deleteProduct({ productId });
+  await deleteProductService({ productId });
 
   return res.sendStatus(200);
 }
