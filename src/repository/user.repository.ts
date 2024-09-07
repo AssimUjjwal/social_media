@@ -1,14 +1,19 @@
-import { FilterQuery } from "mongoose";
+import { FilterQuery, Model } from "mongoose";
 import UserModel, { UserDocument } from "../models/user.model";
 
-export async function createUser(input: any) {
-  return UserModel.create(input);
-}
+export const createUserRepository = (
+    UserModelProto: Model<UserDocument> = UserModel
+) => ({
 
-export async function findUser(query: FilterQuery<UserDocument>) {
-  return UserModel.findOne(query).lean();
-}
+  createUser: async (input: any) => {
+    return UserModelProto.create(input);
+  },
 
-export async function comparePassword(user: UserDocument, password: string) {
-  return user.comparePassword(password);
-}
+  findUser: async (query: FilterQuery<UserDocument>) => {
+    return UserModelProto.findOne(query);
+  },
+
+  comparePassword: async (user: UserDocument, password: string) => {
+    return user.comparePassword(password);
+  },
+});

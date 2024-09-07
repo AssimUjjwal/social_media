@@ -1,44 +1,64 @@
 import { Express, Request, Response } from "express";
 import validateResource from "./middleware/validateResource";
 import { createUserSchema } from "./schema/user.schema";
-import { createUserHandler } from "./controller/user.controller";
+import { createUserController } from "./controller/user.controller";
 import { createSessionSchema } from "./schema/session.schema";
-import { createUserSessionHandler, deleteSessionHandler, getUserSessionsHandler } from "./controller/session.controller";
+import { createSessionController } from "./controller/session.controller";
 import requireUser from "./middleware/requireUser";
 import { createProductSchema, deleteProductSchema, getProductSchema, updateProductSchema } from "./schema/product.schema";
-import { createProductHandler, getProductHandler, updateProductHandler } from "./controller/product.controller";
+import { createProductController } from "./controller/product.controller";
 
-function routes(app: Express) {
-    app.get("/helthcheck", (req: Request, res: Response) => res.sendStatus(200));
+function routes(
+    app: Express,
+    userController: ReturnType<typeof createUserController>,
+    sessionController: ReturnType<typeof createSessionController>,
+    productController: ReturnType<typeof createProductController>
+) {
+    // app.get("/helthcheck", (req: Request, res: Response) => res.sendStatus(200));
 
-    app.post("/api/users", validateResource(createUserSchema), createUserHandler);
+    // ----------------------------------- user Routes --------------------------------------------
+    app.post("/api/users", 
+        validateResource(createUserSchema), 
+        userController.createUserHandler
+    );
 
-    app.post("/api/sessions", validateResource(createSessionSchema), createUserSessionHandler);
-    app.get("/api/sessions", requireUser, getUserSessionsHandler);
-    app.delete("/api/sessions", requireUser, deleteSessionHandler);
+    // ----------------------------------- session Routes --------------------------------------------
+    app.post("/api/sessions", 
+        validateResource(createSessionSchema), 
+        sessionController.createUserSessionHandler
+    );
+    app.get("/api/sessions", 
+        requireUser, 
+        sessionController.getUserSessionsHandler
+    );
+    app.delete("/api/sessions", 
+        requireUser, 
+        sessionController.deleteSessionHandler
+    );
 
+    // ----------------------------------- product Routes --------------------------------------------
     app.post(
         "/api/products",
         [requireUser, validateResource(createProductSchema)],
-        createProductHandler
+        productController.createProductHandler
     );
 
     app.put(
         "/api/products/:productId",
         [requireUser, validateResource(updateProductSchema)],
-        updateProductHandler
+        productController.updateProductHandler
     );
 
     app.get(
         "/api/products/:productId",
         validateResource(getProductSchema),
-        getProductHandler
+        productController.getProductHandler
     );
 
     app.delete(
         "/api/products/:productId",
         [requireUser, validateResource(deleteProductSchema)],
-        getProductHandler
+        productController.deleteProductHandler
     );
 }
 

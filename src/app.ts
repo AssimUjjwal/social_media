@@ -1,5 +1,5 @@
-import express from "express";
 import config from "config";
+
 import connect from "./utils/dbConnect";
 import logger from "./utils/logger";
 import createServer from "./utils/server";

@@ -1,32 +1,37 @@
-// user.service.ts
 import { omit } from "lodash";
-import { createUser, findUser, comparePassword } from "../repository/user.repository";
+
 import { CreateUserInput } from "../schema/user.schema";
 import { CreateSessionInput } from "../schema/session.schema";
+import { createUserRepository } from "../repository/user.repository";
 
-export async function createUserService(
-  input: Omit<CreateUserInput["body"], "passwordConfirmation">
-) {
-  try {
-    const user = await createUser(input);
+export const createUserService = (
+  userRepository = createUserRepository()
+) => ({
+
+  createUserService: async (
+    input: Omit<CreateUserInput["body"], "passwordConfirmation">
+  ) => {
+    try {
+      const user = await userRepository.createUser(input);
+      return omit(user.toJSON(), "password");
+    } catch (e: any) {
+      throw new Error(e);
+    }
+  },
+
+  validatePasswordService: async (
+    { email, password }: CreateSessionInput["body"]
+  ) => {
+    const user = await userRepository.findUser({ email });
+    if (!user) return null;
+
+    const isValid = await userRepository.comparePassword(user, password);
+    if (!isValid) return null;
+
     return omit(user.toJSON(), "password");
-  } catch (e: any) {
-    throw new Error(e);
-  }
-}
+  },
 
-export async function validatePasswordService(
-  { email, password }: CreateSessionInput["body"]
-) {
-  const user = await findUser({ email });
-  if (!user) return null;
-
-  const isValid = await comparePassword(user, password);
-  if (!isValid) return null;
-
-  return omit(user.toJSON(), "password");
-}
-
-export async function findUserService(query: any) {
-  return findUser(query);
-}
+  findUserService: async (query: any) => {
+    return userRepository.findUser(query);
+  },
+});

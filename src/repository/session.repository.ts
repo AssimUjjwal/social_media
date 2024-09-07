@@ -1,21 +1,25 @@
-import { FilterQuery, UpdateQuery } from "mongoose";
+import { FilterQuery, Model, UpdateQuery } from "mongoose";
 import SessionModel, { SessionDocument } from "../models/session.model";
 
-export async function createSession(userId: any, userAgent: string) {
-  return SessionModel.create({ user: userId, userAgent });
-}
+export const createSessionRepository = (
+    SessionModelProto: Model<SessionDocument> = SessionModel
+) => ({
+    createSession: async function (userId: any, userAgent: string) {
+        return SessionModelProto.create({ user: userId, userAgent });
+    },
 
-export async function findSessions(query: FilterQuery<SessionDocument>) {
-  return SessionModel.find(query).lean();
-}
+    findSessions: async function (query: FilterQuery<SessionDocument>) {
+        return SessionModelProto.find(query).lean();
+    },
 
-export async function updateSession(
-  query: FilterQuery<SessionDocument>,
-  update: UpdateQuery<SessionDocument>
-) {
-  return SessionModel.updateOne(query, update);
-}
+    updateSession: async function (
+        query: FilterQuery<SessionDocument>,
+        update: UpdateQuery<SessionDocument>
+    ) {
+        return SessionModelProto.updateOne(query, update);
+    },
 
-export async function findSessionById(sessionId: string) {
-  return SessionModel.findById(sessionId).lean();
-}
+    findSessionById: async function (sessionId: string) {
+        return SessionModelProto.findById(sessionId).lean();
+    }
+})

@@ -1,39 +1,45 @@
-// session.service.ts
 import { get } from "lodash";
-import { createSession, findSessions, updateSession, findSessionById } from "../repository/session.repository";
-import { verifyJwt, signJwt } from "../utils/jwt.utils";
-import { findUserService } from "./user.service";
 import config from "config";
 
-export async function createSessionService(userId: any, userAgent: string) {
-  const session = await createSession(userId, userAgent);
-  return session.toJSON();
-}
+import {  createSessionRepository } from "../repository/session.repository";
+import { createUserService } from "./user.service";
+import { verifyJwt, signJwt } from "../utils/jwt.utils";
 
-export async function findSessionsService(query: any) {
-  return findSessions(query);
-}
+export const createSessionService = (
+    sessionRepository = createSessionRepository(), 
+    userService = createUserService()
+) => ({
 
-export async function updateSessionService(query: any, update: any) {
-  return updateSession(query, update);
-}
+    createSessionService: async function (userId: any, userAgent: string) {
+        const session = await sessionRepository.createSession(userId, userAgent);
+        return session.toJSON();
+    },
 
-export async function reIssueAccessTokenService(
-  { refreshToken }: { refreshToken: string }
-) {
-  const { decoded } = verifyJwt(refreshToken);
-  if (!decoded || !get(decoded, "session")) return null;
+    findSessionsService: async function (query: any) {
+        return sessionRepository.findSessions(query);
+    },
 
-  const session = await findSessionById(get(decoded, "session"));
-  if (!session || !session.valid) return null;
+    updateSessionService: async function (query: any, update: any) {
+        return sessionRepository.updateSession(query, update);
+    },
 
-  const user = await findUserService({ _id: session.user });
-  if (!user) return null;
+    reIssueAccessTokenService: async function (
+        { refreshToken }: { refreshToken: string }
+    ) {
+        const { decoded } =  verifyJwt(refreshToken);
+        if (!decoded || !get(decoded, "session")) return null;
 
-  const accessToken = signJwt(
-    { ...user, session: session._id },
-    { expiresIn: config.get("accessTokenTtl") }
-  );
+        const session = await sessionRepository.findSessionById(get(decoded, "session"));
+        if (!session || !session.valid) return null;
 
-  return accessToken;
-}
+        const user = await userService.findUserService({ _id: session.user });
+        if (!user) return null;
+
+        const accessToken = signJwt(
+            { ...user, session: session._id },
+            { expiresIn: config.get("accessTokenTtl") }
+        );
+
+        return accessToken;
+    }
+})
