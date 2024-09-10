@@ -1,6 +1,6 @@
 import config from "config";
 
-import connect from "./utils/dbConnect";
+import dbInstance from "./utils/dbConnect";
 import logger from "./utils/logger";
 import createServer from "./utils/server";
 
@@ -10,5 +10,5 @@ const app = createServer();
 
 app.listen(port, async () => {
   logger.info(`App is running at http://localhost:${port}`);
-  await connect();
+  await dbInstance();
 });

@@ -2,16 +2,27 @@ import mongoose from "mongoose";
 import config from "config";
 import logger from "./logger";
 
-async function connect() {
-    const dbUri = config.get<string>("dbUri")
+const DB_ENDPOINT = config.get<string>("dbUri");
 
-    try {
-        await mongoose.connect(dbUri);
-        logger.info("Connected to DB.")
-    } catch (error) {
-        logger.error(`Could not connect to DB. \n ${error}`);
-        process.exit(1);
-    }
-}
+const dbInstance = (function database() {
+  let instance: typeof mongoose;
 
-export default connect;
+  async function connect() {
+    const db = await mongoose.connect(DB_ENDPOINT);
+    logger.info("Connected to DB.")
+
+    return db;
+  }
+
+  async function getInstance() {
+    if (instance) return instance;
+    logger.info("No instance, creating db connection.")
+
+    instance = await connect();
+    return instance;
+  }
+
+  return getInstance;
+})();
+
+export default dbInstance;
