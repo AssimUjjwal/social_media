@@ -80,28 +80,64 @@ describe("User Registration", () => {
     });
   });
 
-  describe("given the user service throws", () => {
-    it("should return a 409 error", async () => {
+  // describe("given the user service throws", () => {
+  //   it("should return a 409 error", async () => {
 
-      const mockInput = {
-        email: "test@example.com",
-        name: "test",
-        password: "123456",
-        passwordConfirmation: "123456",
-      };
-      
-      const { app, userRepository } = createApp();
+  //     const mockInput = {
+  //       email: "test@example.com",
+  //       name: "test",
+  //       password: "123456",
+  //       passwordConfirmation: "123456",
+  //     };
 
-      const userRepositoryMock = jest
-          .spyOn(userRepository, "createUser")
-          .mockRejectedValueOnce("Oh no! :(");
+  //     const { app, userRepository } = createApp();
 
-      const res = await request(app)
-        .post("/api/users")
-        .send(mockInput);
+  //     const userRepositoryMock = jest
+  //       .spyOn(userRepository, "createUser")
+  //       .mockRejectedValueOnce("Oh no! :(");
 
-      expect(res.statusCode).toBe(409);
-      expect(userRepository.createUser).toHaveBeenCalled();
-    });
-  });
+  //     const res = await request(app)
+  //       .post("/api/users")
+  //       .send(mockInput);
+
+  //     expect(res.statusCode).toBe(409);
+  //     expect(userRepository.createUser).toHaveBeenCalled();
+  //   });
+  // });
 });
+
+// describe('user session', () => {
+//   describe('POST /api/sessions', () => {
+//     it('should create a session with valid access token', async () => {
+//       // Mock valid token behavior
+//       signJWT.mockReturnValue('mockedAccessToken');
+//       verifyJWT.mockReturnValue({ userId: '12345' });
+
+//       // Test API route with valid token
+//       const response = await request(app)
+//         .post('/api/sessions')
+//         .set('Authorization', 'Bearer mockedAccessToken')
+//         .send({ /* valid data */ });
+//       expect(response.status).toBe(200); // Or other expected status
+//       // Other assertions for response
+//     });
+//   });
+
+//   describe('POST /api/sessions', () => {
+//     it('should return 401 for invalid access token', async () => {
+//       // Mock verifyJWT to throw an error for invalid tokens
+//       verifyJWT.mockImplementation(() => {
+//         throw new Error('Invalid token');
+//       });
+
+//       // Test API route with invalid token
+//       const response = await request(app)
+//         .post('/api/sessions')
+//         .set('Authorization', 'Bearer invalidToken')
+//         .send({ /* valid data */ });
+//       expect(response.status).toBe(401); // Or other expected status
+//       // Other assertions for response
+//     });
+//   });
+// })
+

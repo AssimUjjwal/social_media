@@ -16,7 +16,7 @@ const deserializeUser = (
 
     const { decoded, expired } = verifyJwt(accessToken);
 
-    if (decoded) {
+    if (decoded && (!expired)) {
         res.locals.user = decoded;
         return next();
     }
